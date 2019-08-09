@@ -19,6 +19,7 @@
 typedef struct HistoryEntry{
     int id;
     char command [MAX_LINE];
+    int comm_length;
     struct HistoryEntry* next;
 } HistoryEntry;
 
@@ -32,4 +33,4 @@ void add_to_history(HistoryEntry** head, char* buff,int buff_len);
 
 HistoryEntry* create_history(char* buff,int buff_len);
 
-void get_history(int comm_index); 
+HistoryEntry* get_history(HistoryEntry* head,int comm_index); 

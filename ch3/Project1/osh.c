@@ -7,6 +7,7 @@ int main(void)
 {
     char *args[MAX_LINE/2 + 1];
     char buff[MAX_LINE];
+    
     HistoryEntry* head = NULL;
 
     int should_run = 1;
@@ -41,12 +42,45 @@ int main(void)
         }
 
 
-        if(strncmp(args[0],"history",8) == 0)
+        if(strncmp(buff,"history",8) == 0)
         {
             show_history(head);
             continue;
         }
+
+        //Should be funct
+        HistoryEntry* entry = NULL;
+        int index = 0;
+        if(buff[0] == '!')
+        {
+            if(buff[1] == '!')
+            {
+                entry = get_history(head,1);
+            }
+            else{
+                index = atoi(&buff[1]);
+                if(index == 0)
+                {
+                    printf("%s Not an int\n",&buff[1]);
+                    continue;
+                }
+                entry = get_history(head,index);
+            }
+
+
+            if(entry == NULL)
+            {
+                printf("History Entry %i Not Found\n",index);
+                continue;
+            }
+            else
+            {
+                memcpy(buff,entry->command,MAX_LINE);
+                buff_len = entry->comm_length;
+            }
+        }        
         add_to_history(&head,buff,buff_len);
+
         parse_line(args,buff,buff_len);
         execute(args,run_in_background);
 
@@ -57,14 +91,16 @@ int main(void)
 
 void parse_line(char* args[],char* buff, int buff_len)
 {
+    //must have atleast 1 arg in buff
     int arg_index = 0;
     int nulling = TRUE;
+
+
     for(int i = 0; i < buff_len; i++)
     {
 
         if(buff[i] == ' ')
         {
-
             buff[i] = '\0';
             nulling = TRUE;
         }
@@ -74,6 +110,7 @@ void parse_line(char* args[],char* buff, int buff_len)
             args[arg_index] = &buff[i];
             arg_index += 1;   
         }
+
     }
     args[arg_index] = NULL;
 }
@@ -118,16 +155,17 @@ void show_history(HistoryEntry* head)
 void add_to_history(HistoryEntry** head,char* buff,int buff_len)
 {
     HistoryEntry* new_entry = create_history(buff,buff_len);
-
     if(*head == NULL)
     {
         (*head) = new_entry;
         (*head)->id = 1;
+        (*head)->comm_length = buff_len;
         return;
     }
 
     new_entry->next = *head;
     new_entry->id = (*head)->id + 1;
+    new_entry->comm_length = buff_len;
     *head = new_entry;
 
 }
@@ -140,4 +178,18 @@ HistoryEntry* create_history(char* buff,int buff_len)
     new_entry->next = NULL;
 
     return new_entry;
+}
+
+HistoryEntry* get_history(HistoryEntry* head,int comm_index)
+{
+    HistoryEntry* curr = head;
+    while(curr != NULL)
+    {
+        if(curr->id == comm_index)
+        {
+            return curr;
+        }
+        curr = curr->next;
+    }
+    return NULL;
 }
