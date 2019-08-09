@@ -1,15 +1,5 @@
-
-
-#include <stdio.h>
-#include <unistd.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/wait.h>
 #include "osh.h"
 
-#define MAX_LINE 80
-#define TRUE 0
-#define FALSE 1
 
 
 
@@ -17,14 +7,16 @@ int main(void)
 {
     char *args[MAX_LINE/2 + 1];
     char buff[MAX_LINE];
+    HistoryEntry* head = NULL;
 
     int should_run = 1;
+
+    int history_counter = 1;
 
     while(should_run)
     {
         printf("osh>");
         fflush(stdout);
-        
         
         fgets(buff,MAX_LINE,stdin);
         int buff_len = strnlen(buff,MAX_LINE);
@@ -38,7 +30,6 @@ int main(void)
         {
             continue;
         }
-
         int run_in_background = FALSE;
         //"ls\n\0"
         // 01 2 3
@@ -47,9 +38,15 @@ int main(void)
         {
             buff[buff_len - 2] = '\0';
             run_in_background = TRUE;
-            printf("background\n");
         }
 
+
+        if(strncmp(args[0],"history",8) == 0)
+        {
+            show_history(head);
+            continue;
+        }
+        add_to_history(&head,buff,buff_len);
         parse_line(args,buff,buff_len);
         execute(args,run_in_background);
 
@@ -101,4 +98,46 @@ void execute(char* cmd_chunks[], int background)
         }
 
     }
+}
+
+void show_history(HistoryEntry* head)
+{
+    HistoryEntry* curr = head;
+    if (head == NULL)
+    {
+        printf("No History \n");
+        return;
+    }
+    for(int i = 0;curr != NULL && i < MAX_HIST;i++)
+    {
+        printf("%d %s\n",curr->id,curr->command);
+        curr = curr->next;
+    }
+}
+
+void add_to_history(HistoryEntry** head,char* buff,int buff_len)
+{
+    HistoryEntry* new_entry = create_history(buff,buff_len);
+
+    if(*head == NULL)
+    {
+        (*head) = new_entry;
+        (*head)->id = 1;
+        return;
+    }
+
+    new_entry->next = *head;
+    new_entry->id = (*head)->id + 1;
+    *head = new_entry;
+
+}
+
+HistoryEntry* create_history(char* buff,int buff_len)
+{
+    HistoryEntry* new_entry = (HistoryEntry*)malloc(sizeof(HistoryEntry));
+    
+    memcpy(new_entry->command,buff,buff_len);
+    new_entry->next = NULL;
+
+    return new_entry;
 }
