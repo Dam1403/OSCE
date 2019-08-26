@@ -30,11 +30,14 @@ void print_task(struct task_struct *task)
 void dfs(struct list_head *list, struct task_struct* task, int level)
 {
 
+	printk(KERN_INFO "Level: %d",level);
 	list_for_each(list, &task->children)
 	{
 		task = list_entry(list,struct task_struct,sibling);
 		print_task(task);
-		dfs(list,task,level + 1);
+		
+		struct list_head *list_copy = list;
+		dfs(list_copy,task,level + 1);
 	}
 
 
