@@ -27,17 +27,17 @@ void print_task(struct task_struct *task)
 }
 
 
-void dfs(struct list_head *list, struct task_struct* task, int level)
+void dfs(struct task_struct* task, int level)
 {
+	struct list_head *list;
 
 	printk(KERN_INFO "Level: %d",level);
 	list_for_each(list, &task->children)
 	{
-		task = list_entry(list,struct task_struct,sibling);
-		print_task(task);
+		struct task_struct * child_task = list_entry(list,struct task_struct,sibling);
+		print_task(child_task);
 		
-		struct list_head *list_copy = list;
-		dfs(list_copy,task,level + 1);
+		dfs(child_task,level + 1);
 	}
 
 
@@ -46,10 +46,7 @@ int simple_init(void){
 	printk(KERN_INFO "Loading Module\n");
 	
 
-	struct list_head *list = NULL;
-	
-
-	dfs(list,&init_task,0);
+	dfs(&init_task,0);
 
 	return 0;
 }
