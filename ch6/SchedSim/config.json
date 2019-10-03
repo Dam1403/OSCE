@@ -1,0 +1,12 @@
+{
+  "runtime_seconds": 1,
+  "jobs_per_second":10,
+  "job_to_runtime_ratio": 0.5,
+  "avg_io_block_per_sec": 2,
+  "interrupt_latency_micsec":2,
+  "io_block_time_micsec": 250000,
+  "context_switch_latency_micsec": 1,
+  "random_seed": 49994
+}
+
+
